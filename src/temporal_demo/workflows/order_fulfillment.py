@@ -202,7 +202,8 @@ class OrderFulfillmentWorkflow:
             input_.order_id,
             input_.items,
             self._take_injection("create_shipment"),
-            start_to_close_timeout=timedelta(seconds=10),
+            start_to_close_timeout=timedelta(minutes=5),
+            heartbeat_timeout=timedelta(seconds=5),
             retry_policy=RetryPolicy(maximum_attempts=5),
         )
         self._shipment_id = shipment.shipment_id

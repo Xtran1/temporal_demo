@@ -49,6 +49,21 @@ Then:
 Observation:
 - The workflow resumes and completes without any manual checkpointing.
 
+## 6b) Crash mid-Activity + heartbeat resume
+This demonstrates “work in progress” durability via **Activity heartbeats**.
+
+1. Run the worker with a slow shipping Activity:
+   - Terminal B:
+     - `DEMO_SLOW_SHIPMENT_SECONDS=60 uv run python -m apps.worker`
+2. Start + approve a workflow (as above).
+3. When the watcher shows the `SHIP` step:
+   - Terminal B: stop the worker (Ctrl-C).
+4. Wait ~5–10 seconds and restart the worker.
+
+Observations (Temporal UI):
+- You should see the shipping Activity retry due to a heartbeat timeout.
+- On the new attempt, the activity resumes from the last heartbeat details instead of starting from zero.
+
 ## 7) Dynamic failure injection (Ctrl-C without stopping the watcher)
 While `watch` is running:
 - Terminal C: press Ctrl-C
@@ -70,4 +85,3 @@ Example:
   - `DEMO_FAIL_CHARGE=transient_first_attempt uv run python -m apps.worker`
 
 Then start + approve a new workflow and observe retries in UI.
-

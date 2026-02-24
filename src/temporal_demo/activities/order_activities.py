@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from dataclasses import dataclass
 
@@ -55,6 +56,16 @@ def _maybe_fail(fail_mode: str, *, env_name: str, operation: str) -> None:
         raise ApplicationError(f"{operation} business failure (signal)", non_retryable=True)
 
 
+def _env_int(name: str, default: int = 0) -> int:
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
 @activity.defn
 async def reserve_inventory(order_id: str, items: list[str], fail_mode: str = "off") -> Reservation:
     _maybe_fail(fail_mode, env_name="DEMO_FAIL_RESERVE", operation="reserve_inventory")
@@ -77,7 +88,29 @@ async def charge_card(order_id: str, amount_cents: int, fail_mode: str = "off") 
 @activity.defn
 async def create_shipment(order_id: str, items: list[str], fail_mode: str = "off") -> Shipment:
     _maybe_fail(fail_mode, env_name="DEMO_FAIL_SHIPMENT", operation="create_shipment")
-    activity.logger.info("Creating shipment", extra={"order_id": order_id, "items": items})
+    total_seconds = _env_int("DEMO_SLOW_SHIPMENT_SECONDS", 0)
+    progress_seconds = 0
+
+    details = activity.info().heartbeat_details
+    if details and isinstance(details[0], dict) and "progress_seconds" in details[0]:
+        progress_seconds = int(details[0]["progress_seconds"])
+
+    if total_seconds > 0:
+        activity.logger.info(
+            "Creating shipment (slow w/ heartbeats)",
+            extra={
+                "order_id": order_id,
+                "items": items,
+                "total_seconds": total_seconds,
+                "resume_from_seconds": progress_seconds,
+                "attempt": activity.info().attempt,
+            },
+        )
+        for i in range(progress_seconds, total_seconds):
+            activity.heartbeat({"progress_seconds": i + 1, "total_seconds": total_seconds})
+            await asyncio.sleep(1)
+    else:
+        activity.logger.info("Creating shipment", extra={"order_id": order_id, "items": items})
     return Shipment(shipment_id=f"ship_{order_id}")
 
 
