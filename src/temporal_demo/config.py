@@ -1,0 +1,4 @@
+TEMPORAL_ADDRESS = "localhost:7233"
+TEMPORAL_NAMESPACE = "default"
+TEMPORAL_TASK_QUEUE = "temporal-demo"
+

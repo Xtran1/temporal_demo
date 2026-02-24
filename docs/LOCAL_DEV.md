@@ -9,6 +9,8 @@
    - `docker compose up -d`
 2. Open Temporal UI:
    - http://localhost:8233
+3. Install Python deps (first time / after updates):
+   - `uv sync`
 
 Ports:
 - Temporal gRPC: `localhost:7233`
@@ -21,4 +23,3 @@ Ports:
 Once milestone 2 is implemented, the intended loop is:
 - `uv run python -m apps.worker`
 - `uv run python -m apps.client ...`
-

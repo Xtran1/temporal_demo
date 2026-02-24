@@ -20,6 +20,9 @@ Common commands:
 - Run python: `uv run python main.py`
 - Run tests: `uv run pytest`
 
+If you see cache permission errors from `uv` (e.g. writing to `~/.cache/uv`), set:
+- `UV_CACHE_DIR=/tmp/uv-cache`
+
 ## Local Temporal (docker-compose)
 - We will run Temporal Server + UI via `docker-compose`.
 - Standard dev loop:
@@ -38,4 +41,3 @@ Common commands:
 ## Git Workflow (required)
 - Make a **git commit after finishing each discrete task**, e.g. writing `AGENTS.md` or `TODO.md`.
 - Keep commits small and message them as `docs: ...`, `chore: ...`, `feat: ...`.
-
