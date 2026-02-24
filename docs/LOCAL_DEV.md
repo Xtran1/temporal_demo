@@ -23,3 +23,6 @@ Ports:
 Once milestone 2 is implemented, the intended loop is:
 - `uv run python -m apps.worker`
 - `uv run python -m apps.client ...`
+
+Demo walkthrough:
+- `docs/DEMO_SCRIPT.md`

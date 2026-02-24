@@ -17,3 +17,4 @@ This repo demonstrates **Temporal’s durable execution**: workflows that keep p
 
 Docs:
 - `docs/LOCAL_DEV.md`
+- `docs/DEMO_SCRIPT.md`
