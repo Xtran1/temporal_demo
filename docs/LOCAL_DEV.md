@@ -26,3 +26,9 @@ Once milestone 2 is implemented, the intended loop is:
 
 Demo walkthrough:
 - `docs/DEMO_SCRIPT.md`
+
+## Run tests
+- Start infra:
+  - `docker compose up -d`
+- Run:
+  - `uv run python -m unittest discover -s tests -p "test*.py" -v`

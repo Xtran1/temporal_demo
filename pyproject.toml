@@ -11,10 +11,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0.0"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
+dev = []
 
 [build-system]
 requires = ["hatchling>=1.25.0"]

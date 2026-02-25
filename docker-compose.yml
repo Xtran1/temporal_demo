@@ -12,7 +12,7 @@ services:
     depends_on:
       - postgres
     environment:
-      DB: postgresql
+      DB: postgres12
       DB_PORT: 5432
       POSTGRES_USER: temporal
       POSTGRES_PWD: temporal
@@ -32,4 +32,3 @@ services:
 
 volumes:
   temporal-postgres-data:
-

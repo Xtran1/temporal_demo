@@ -135,9 +135,11 @@ class OrderFulfillmentWorkflow:
         self._step = OrderStep.RESERVE
         reservation = await workflow.execute_activity(
             reserve_inventory,
-            input_.order_id,
-            input_.items,
-            self._take_injection("reserve_inventory"),
+            args=[
+                input_.order_id,
+                input_.items,
+                self._take_injection("reserve_inventory"),
+            ],
             start_to_close_timeout=timedelta(seconds=10),
             retry_policy=RetryPolicy(maximum_attempts=5),
         )
@@ -188,9 +190,11 @@ class OrderFulfillmentWorkflow:
         self._step = OrderStep.CHARGE
         charge = await workflow.execute_activity(
             charge_card,
-            input_.order_id,
-            input_.amount_cents,
-            self._take_injection("charge_card"),
+            args=[
+                input_.order_id,
+                input_.amount_cents,
+                self._take_injection("charge_card"),
+            ],
             start_to_close_timeout=timedelta(seconds=10),
             retry_policy=RetryPolicy(initial_interval=timedelta(seconds=1), maximum_attempts=10),
         )
@@ -200,9 +204,11 @@ class OrderFulfillmentWorkflow:
         self._step = OrderStep.SHIP
         shipment = await workflow.execute_activity(
             create_shipment,
-            input_.order_id,
-            input_.items,
-            self._take_injection("create_shipment"),
+            args=[
+                input_.order_id,
+                input_.items,
+                self._take_injection("create_shipment"),
+            ],
             start_to_close_timeout=timedelta(minutes=5),
             heartbeat_timeout=timedelta(seconds=5),
             retry_policy=RetryPolicy(maximum_attempts=5),
@@ -213,8 +219,7 @@ class OrderFulfillmentWorkflow:
         self._step = OrderStep.EMAIL
         await workflow.execute_activity(
             send_email,
-            input_.order_id,
-            "order_completed",
+            args=[input_.order_id, "order_completed"],
             start_to_close_timeout=timedelta(seconds=10),
         )
 

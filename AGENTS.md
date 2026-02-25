@@ -18,7 +18,7 @@ Common commands:
 - Create/sync venv: `uv venv && uv sync`
 - Add deps: `uv add temporalio`
 - Run python: `uv run python main.py`
-- Run tests: `uv run pytest`
+- Run tests: `uv run python -m unittest discover -s tests -p "test*.py" -v`
 
 If you see cache permission errors from `uv` (e.g. writing to `~/.cache/uv`), set:
 - `UV_CACHE_DIR=/tmp/uv-cache`
