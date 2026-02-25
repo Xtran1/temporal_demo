@@ -29,6 +29,7 @@ class OrderInput:
     items: list[str]
     amount_cents: int
     pace_seconds: float = 1.5
+    approval_timeout_seconds: int = 300
 
 
 @dataclass(frozen=True)
@@ -148,7 +149,7 @@ class OrderFulfillmentWorkflow:
         try:
             await workflow.wait_condition(
                 lambda: self._fraud_result is not None,
-                timeout=timedelta(minutes=5),
+                timeout=timedelta(seconds=input_.approval_timeout_seconds),
             )
         except (TimeoutError, asyncio.TimeoutError):
             await workflow.execute_activity(

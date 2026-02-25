@@ -35,6 +35,7 @@ def start_order(
     amount_cents: int = typer.Option(1299, help="Amount in cents"),
     item: list[str] = typer.Option(["widget"], help="Repeatable item name"),
     pace_seconds: float = typer.Option(1.5, help="Delay between steps (durable timer)"),
+    approval_timeout_seconds: int = typer.Option(300, help="Seconds to wait for approval before rejecting"),
 ) -> None:
     """Start the Order Fulfillment workflow."""
 
@@ -48,6 +49,7 @@ def start_order(
             items=item,
             amount_cents=amount_cents,
             pace_seconds=pace_seconds,
+            approval_timeout_seconds=approval_timeout_seconds,
         )
         handle = await client.start_workflow(
             "OrderFulfillmentWorkflow",
@@ -152,6 +154,7 @@ def watch(
     workflow_id: Optional[str] = typer.Option(None, help="Workflow ID to watch"),
     start: bool = typer.Option(False, help="Start a new workflow if no workflow_id is given"),
     pace_seconds: float = typer.Option(1.5, help="Delay between workflow steps if starting"),
+    approval_timeout_seconds: int = typer.Option(300, help="Seconds to wait for approval if starting"),
     poll_seconds: float = typer.Option(0.75, help="Polling interval for state query"),
     inject_on_ctrl_c: bool = typer.Option(True, help="On Ctrl-C, inject a transient charge failure"),
 ) -> None:
@@ -165,7 +168,13 @@ def watch(
         resolved_order_id = f"order-{uuid4()}"
         handle = await client.start_workflow(
             "OrderFulfillmentWorkflow",
-            OrderInput(order_id=resolved_order_id, items=["widget"], amount_cents=1299, pace_seconds=pace_seconds),
+            OrderInput(
+                order_id=resolved_order_id,
+                items=["widget"],
+                amount_cents=1299,
+                pace_seconds=pace_seconds,
+                approval_timeout_seconds=approval_timeout_seconds,
+            ),
             id=resolved_order_id,
             task_queue=TEMPORAL_TASK_QUEUE,
             execution_timeout=timedelta(days=7),

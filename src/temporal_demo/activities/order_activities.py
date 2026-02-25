@@ -51,7 +51,9 @@ def _maybe_fail(fail_mode: str, *, env_name: str, operation: str) -> None:
 
     mode = fail_mode.strip().lower()
     if mode in {"transient", "retryable"}:
-        raise RuntimeError(f"{operation} transient failure (signal)")
+        if activity.info().attempt == 1:
+            raise RuntimeError(f"{operation} transient failure (signal)")
+        return
     if mode in {"business", "non_retryable"}:
         raise ApplicationError(f"{operation} business failure (signal)", non_retryable=True)
 
