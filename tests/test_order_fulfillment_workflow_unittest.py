@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import unittest
 from datetime import timedelta
@@ -27,8 +28,23 @@ from temporal_demo.workflows.order_fulfillment import (
 
 TASK_QUEUE = "test-temporal-demo"
 
+def _silence_temporal_logs() -> None:
+    logging.getLogger().setLevel(logging.CRITICAL)
+
+    for name in [
+        "temporalio",
+        "temporalio.worker",
+        "temporalio.worker._activity",
+        "temporalio.worker._workflow_instance",
+    ]:
+        logger = logging.getLogger(name)
+        logger.setLevel(logging.CRITICAL)
+        logger.propagate = False
+        logger.handlers = [logging.NullHandler()]
+
 
 async def _run_with_worker(fn) -> None:
+    _silence_temporal_logs()
     client = await Client.connect(TEMPORAL_ADDRESS, namespace=TEMPORAL_NAMESPACE)
     async with Worker(
         client,
