@@ -25,3 +25,7 @@ What’s happening in this demo:
 Docs:
 - `docs/LOCAL_DEV.md`
 - `docs/DEMO_SCRIPT.md`
+- `docs/ORDER_FULFILLMENT_WALKTHROUGH.md`
+- `docs/MENU_ROLLOUT_WALKTHROUGH.md`
+- `docs/AGENT_LOOP_WALKTHROUGH.md`
+- `docs/KNOWLEDGE_SHARE_PLAN.md`

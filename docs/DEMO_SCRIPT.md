@@ -85,3 +85,10 @@ Example:
   - `DEMO_FAIL_CHARGE=transient_first_attempt uv run python -m apps.worker`
 
 Then start + approve a new workflow and observe retries in UI.
+
+## More knowledge-share examples
+
+This original script focuses on order fulfillment. The broader workshop examples are:
+- `docs/ORDER_FULFILLMENT_WALKTHROUGH.md`
+- `docs/MENU_ROLLOUT_WALKTHROUGH.md`
+- `docs/AGENT_LOOP_WALKTHROUGH.md`
