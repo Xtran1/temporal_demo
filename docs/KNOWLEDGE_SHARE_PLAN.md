@@ -24,8 +24,9 @@ Audience: medior-to-senior software engineers who can evaluate a new infrastruct
 
 3. **BYOC: Bring Your Own Code**
    - Small-group breakout format.
-   - Participants map one real workplace process onto Temporal capabilities.
-   - The output is both a fit assessment and a lightweight architecture sketch.
+   - Participants describe one real workplace process in plain language.
+   - A terminal assistant maps the answers onto possible Temporal capabilities.
+   - The output is a discussion starter: likely fit signal, pain-to-concept mapping, rough sketch, and follow-up questions.
    - "Not a fit" is a valid and useful outcome.
 
 ## Path 2: Example Direction
@@ -110,10 +111,17 @@ Expansion ideas:
 
 ## Path 3: BYOC Direction
 
-Run BYOC as a 25-35 minute small-group breakout. Groups choose one real workplace process from their own systems, then use `docs/BYOC_WORKSHEET.md` to produce both:
+Run BYOC as a 25-35 minute small-group breakout. Groups choose one real workplace process from their own systems, then run:
 
-- a fit assessment: `yes`, `maybe`, or `probably not`
-- a lightweight Temporal-shaped architecture sketch
+```bash
+uv run python -m apps.byoc
+```
+
+The script asks plain-language questions, then prints:
+
+- where Temporal might help
+- a rough Temporal-shaped architecture sketch
+- questions the group should discuss next
 
 Recommended flow:
 
@@ -122,21 +130,22 @@ Recommended flow:
    - Avoid pure synchronous CRUD or request-response paths.
 
 2. **Current-state mapping: 7 minutes**
-   - Identify trigger, completion condition, current state storage, external systems, retry/recovery logic, manual operations, and failure modes.
+   - Answer the script prompts about trigger, completion condition, current coordination mechanism, external systems, retry/recovery logic, manual operations, and failure modes.
 
-3. **Temporal projection: 10-12 minutes**
-   - Sketch the main workflow, activities, signals, queries, timers, retry policies, compensation, and child workflows where useful.
-   - Keep this conceptual; no SDK details or deployment design required.
+3. **Script analysis: 3-5 minutes**
+   - Read the generated fit signal, likely Temporal concepts, and rough sketch.
+   - Treat the output as a discussion starter, not a verdict.
 
-4. **Fit assessment: 5-7 minutes**
-   - Decide whether Temporal looks like a good fit.
-   - List the clearest benefits, risks, and unanswered questions.
+4. **Group discussion: 10-12 minutes**
+   - Challenge the generated mapping.
+   - Identify real benefits, risks, and unanswered questions.
+   - Decide the smallest painful slice worth prototyping, if any.
 
 5. **Share-out: 5-8 minutes**
-   - Each group summarizes the process, current pain, Temporal shape, fit verdict, and biggest question.
+   - Each group summarizes the process, current pain, where Temporal might help, and the biggest unanswered question.
 
 Acceptance criteria:
-- Participants can complete the worksheet without needing Temporal expertise.
+- Participants can complete the terminal prompts without needing Temporal expertise.
 - Discussion stays grounded in real systems rather than abstract architecture.
-- Each group leaves with both a reasoned fit assessment and a rough architecture sketch.
+- Each group leaves with a reasoned fit signal and a rough architecture sketch.
 - The exercise does not require a polished design.

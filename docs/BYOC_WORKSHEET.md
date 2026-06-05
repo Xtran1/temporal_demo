@@ -1,104 +1,78 @@
-# BYOC Worksheet: Bring Your Own Code
+# BYOC Terminal Assistant
 
-Use this worksheet to map a real workplace process onto Temporal. The goal is not to prove Temporal is the answer. The goal is to decide whether durable execution could simplify the process, make it more reliable, or make it easier to operate.
+Path 3 should not assume participants already know where Temporal fits. After a short presentation, most people will not be ready to design Workflows, Activities, Signals, Queries, and Timers from a blank page.
 
-## 1. Pick a Process
+Instead, use the BYOC terminal assistant. It asks plain-language questions about a real workplace process, then prints:
 
-Process name:
+- where Temporal might help
+- a rough Temporal-shaped sketch
+- questions the group should discuss next
 
-Owner/team/context:
+Run it with:
 
-Choose a process that has at least one of these:
-- waiting for time or external input
-- retries or manual recovery
-- async jobs, queues, cron, or scheduled work
-- external side effects
-- human approval
-- long-running state
-- partial failure or compensation
+```bash
+uv run python -m apps.byoc
+```
 
-Avoid pure synchronous CRUD or request-response flows.
+## How To Use It In The Session
 
-## 2. Current State
+Recommended timebox: 25-35 minutes.
 
-Trigger:
+1. **Pick a case**
+   - Choose one real process from the group's work.
+   - Good candidates involve waiting, retries, scheduled work, external systems, manual recovery, long-running state, approvals, fan-out, or compensation.
+   - Avoid pure synchronous CRUD or request-response flows.
 
-Done condition:
+2. **Answer the prompts**
+   - Do not try to sound like a Temporal expert.
+   - Describe the current system in normal engineering language: queues, cron, DB flags, runbooks, dashboards, scripts, support tickets, manual fixes.
 
-Where does process state live today?
+3. **Read the generated analysis**
+   - Treat the fit signal as a discussion starter, not a verdict.
+   - The important output is the mapping from today's pain to possible Temporal concepts.
 
-Examples: database rows, status flags, queue messages, cron jobs, logs, spreadsheets, manual tracking.
+4. **Discuss the follow-up questions**
+   - Focus on whether Temporal would remove real operational pain.
+   - "Not a fit" is a valid outcome.
 
-External systems or side effects:
+5. **Share out**
+   - Process:
+   - Current pain:
+   - Where Temporal might help:
+   - Biggest unanswered question:
 
-Examples: payment, email, internal services, third-party APIs, data pipelines, generated files.
+## What The Prompts Are Looking For
 
-Retry and recovery behavior:
+The assistant does not ask "where would you use Signals?" or "what is the Workflow?" because those questions require Temporal knowledge. It asks about symptoms instead:
 
-Examples: automatic retries, manual reruns, dead-letter queues, support scripts, dashboard buttons.
+- Does the process run for a long time?
+- Does it wait for time, approvals, callbacks, or outside events?
+- Does it call external systems?
+- Does it need retries?
+- Do people manually inspect, rerun, or repair failed cases?
+- Would better visibility into the current step help?
+- Does one case fan out into repeated or parallel work?
+- Can later failure require undo, rollback, refund, release, or reconciliation?
 
-Known pain points:
+The script then maps those symptoms to likely Temporal concepts:
 
-Examples: lost state, duplicate work, hard-to-debug failures, unclear ownership, manual cleanup, poor visibility.
+- long-running state -> Workflow
+- external systems or side effects -> Activities
+- flaky calls or manual reruns -> Activity retries
+- waiting for time -> Timers
+- approvals, callbacks, cancellations, changed input -> Signals
+- operator visibility -> Queries
+- repeated or parallel branches -> Child Workflows or fan-out Activities
+- undo or rollback needs -> Compensation
 
-## 3. Temporal Projection
+## Facilitator Notes
 
-Main Workflow:
+The goal is not to sell Temporal. The goal is to help engineers ask sharper questions about a real process:
 
-What durable process would the workflow represent?
+- Which parts are orchestration rather than business computation?
+- Which side effects must be idempotent?
+- Which failures should retry, stop, branch, or compensate?
+- Which state would be useful during an incident?
+- What is the smallest painful slice worth prototyping?
 
-Activities:
-
-What side effects or external calls would move out of workflow code and into activities?
-
-Signals:
-
-What external events might arrive while the process is running?
-
-Examples: approval, cancellation, new input, retry request, pause/resume.
-
-Queries:
-
-What state would operators, users, or other services want to inspect?
-
-Timers:
-
-Where would durable waiting help?
-
-Examples: SLA timeout, delayed publish, reminder, retry window, cooling-off period.
-
-Retries:
-
-Which failures are retryable, and which should stop or branch the process?
-
-Compensation:
-
-What needs to be undone or reconciled if a later step fails?
-
-Child Workflows:
-
-Would any repeated, parallel, or independently tracked subprocesses be clearer as child workflows?
-
-## 4. Fit Assessment
-
-Verdict:
-
-Choose one: `yes`, `maybe`, `probably not`
-
-Best reasons Temporal might help:
-
-Risks or costs:
-
-Open questions:
-
-What would you test in a spike?
-
-## 5. Share-Out
-
-Use this short summary if your group presents:
-
-- Process:
-- Current pain:
-- Temporal shape:
-- Fit verdict:
-- Biggest question:
+If the generated analysis says the case is weak or unclear, that is useful. It means the group can avoid forcing Temporal onto a problem that may be better handled by a normal request, job, queue, or database transaction.
