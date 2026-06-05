@@ -22,6 +22,19 @@ class ToolResult:
     output: str
 
 
+def should_fail_transient_tool(
+    *,
+    attempt: int,
+    fail_mode: str = "off",
+    transient_failure_rate: float = 0.25,
+    random_value: float,
+) -> bool:
+    mode = fail_mode.strip().lower()
+    if mode in {"transient", "retryable"}:
+        return attempt == 1
+    return mode in {"", "off", "0", "false"} and attempt == 1 and random_value < transient_failure_rate
+
+
 @activity.defn
 async def decide_next_action(
     goal: str,
@@ -54,13 +67,27 @@ async def decide_next_action(
 
 
 @activity.defn
-async def run_agent_tool(tool_name: str, tool_input: str, fail_mode: str = "off") -> ToolResult:
-    mode = fail_mode.strip().lower()
-    if mode in {"transient", "retryable"} and activity.info().attempt == 1:
-        raise RuntimeError(f"{tool_name} transient failure")
+async def run_agent_tool(
+    tool_name: str,
+    tool_input: str,
+    fail_mode: str = "off",
+    transient_failure_rate: float = 0.25,
+) -> ToolResult:
+    if should_fail_transient_tool(
+        attempt=activity.info().attempt,
+        fail_mode=fail_mode,
+        transient_failure_rate=transient_failure_rate,
+        random_value=random.random(),
+    ):
+        raise RuntimeError(f"{tool_name} simulated flaky tool failure")
 
     activity.logger.info(
         "Running agent tool",
-        extra={"tool_name": tool_name, "tool_input": tool_input, "attempt": activity.info().attempt},
+        extra={
+            "tool_name": tool_name,
+            "tool_input": tool_input,
+            "attempt": activity.info().attempt,
+            "transient_failure_rate": transient_failure_rate,
+        },
     )
     return ToolResult(tool_name=tool_name, output=f"{tool_name} result for {tool_input}")

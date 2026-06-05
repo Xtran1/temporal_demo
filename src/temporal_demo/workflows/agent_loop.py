@@ -18,6 +18,7 @@ class AgentLoopInput:
     min_steps: int = 3
     max_steps: int = 10
     max_tool_calls: int = 12
+    transient_failure_rate: float = 0.25
     pace_seconds: float = 0.0
 
 
@@ -153,6 +154,7 @@ class AgentLoopWorkflow:
                         decision.tool_name,
                         decision.tool_input,
                         self._take_tool_failure(decision.tool_name),
+                        input_.transient_failure_rate,
                     ],
                     start_to_close_timeout=timedelta(seconds=10),
                     retry_policy=RetryPolicy(maximum_attempts=5),

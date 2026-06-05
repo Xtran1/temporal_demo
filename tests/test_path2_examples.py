@@ -7,7 +7,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from apps.client.__main__ import app
-from temporal_demo.activities.agent_activities import decide_next_action
+from temporal_demo.activities.agent_activities import decide_next_action, should_fail_transient_tool
 from temporal_demo.workflows.agent_loop import AgentLoopInput
 from temporal_demo.workflows.menu_rollout import MenuRolloutInput
 
@@ -42,6 +42,7 @@ class Path2ExampleTests(unittest.TestCase):
         self.assertEqual(menu_input.approval_timeout_seconds, 300)
         self.assertEqual(agent_input.min_steps, 3)
         self.assertEqual(agent_input.max_steps, 10)
+        self.assertEqual(agent_input.transient_failure_rate, 0.25)
 
     def test_agent_decision_activity_can_complete_from_recorded_state(self) -> None:
         decision = asyncio.run(
@@ -57,6 +58,24 @@ class Path2ExampleTests(unittest.TestCase):
 
         self.assertTrue(decision.done)
         self.assertIn("Satisfied after 3 tool calls", decision.final_answer)
+
+    def test_agent_tool_flakiness_is_first_attempt_only(self) -> None:
+        self.assertTrue(
+            should_fail_transient_tool(
+                attempt=1,
+                fail_mode="off",
+                transient_failure_rate=0.75,
+                random_value=0.2,
+            )
+        )
+        self.assertFalse(
+            should_fail_transient_tool(
+                attempt=2,
+                fail_mode="off",
+                transient_failure_rate=0.75,
+                random_value=0.2,
+            )
+        )
 
 
 if __name__ == "__main__":

@@ -25,7 +25,7 @@ uv run python -m apps.worker
 Start an agent loop:
 
 ```bash
-uv run python -m apps.client start-agent "Investigate a failed menu rollout" --min-steps 3 --max-steps 8 --max-tool-calls 10
+uv run python -m apps.client start-agent "Investigate a failed menu rollout" --min-steps 5 --max-steps 8 --max-tool-calls 10 --transient-failure-rate 0.35
 ```
 
 Watch or inspect state:
@@ -35,7 +35,13 @@ uv run python -m apps.client watch --workflow-id <workflow_id>
 uv run python -m apps.client describe <workflow_id>
 ```
 
-Inject a transient failure into the next tool call:
+Tool calls fail transiently by default often enough to observe retries in Temporal UI. You can make that more obvious:
+
+```bash
+uv run python -m apps.client start-agent "Investigate flaky tools" --min-steps 5 --max-steps 8 --transient-failure-rate 0.75
+```
+
+Manual failure injection is still available if you want to force the next tool call to retry:
 
 ```bash
 uv run python -m apps.client inject-agent-failure <workflow_id> --tool-name '*' --mode transient
@@ -53,7 +59,7 @@ In Temporal UI:
 - every agent decision is an Activity result recorded in history
 - random-looking behavior is replay-safe because it happens in Activities
 - waits between tool calls are durable timers
-- transient tool failures retry visibly
+- simulated transient tool failures retry visibly without manual signaling
 - query state shows the current tool, completed step count, and last result
 
 ## Expansion Ideas
@@ -61,6 +67,7 @@ In Temporal UI:
 - Add human approval before risky tools.
 - Add separate child workflows for long-running tools.
 - Add per-tool retry policies and non-retryable tool errors.
+- Make failure rates configurable per tool.
 - Add maximum cost, step, or wall-clock budgets.
 - Add queries for current plan, last tool result, remaining budget, and waiting reason.
 - Replace the simulated decision Activity with a real model call while keeping it outside workflow code.

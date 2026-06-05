@@ -215,6 +215,10 @@ def start_agent(
     min_steps: int = typer.Option(3, help="Minimum simulated tool calls before satisfaction"),
     max_steps: int = typer.Option(10, help="Maximum simulated tool calls before satisfaction"),
     max_tool_calls: int = typer.Option(12, help="Budget cap for tool calls"),
+    transient_failure_rate: float = typer.Option(
+        0.25,
+        help="Chance that a tool call fails on its first attempt, then succeeds on retry",
+    ),
     pace_seconds: float = typer.Option(0.0, help="Extra durable delay between tool calls"),
 ) -> None:
     """Start the Agent Loop workflow."""
@@ -227,6 +231,7 @@ def start_agent(
             min_steps=min_steps,
             max_steps=max_steps,
             max_tool_calls=max_tool_calls,
+            transient_failure_rate=transient_failure_rate,
             pace_seconds=pace_seconds,
         )
         handle = await client.start_workflow(
