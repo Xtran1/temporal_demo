@@ -121,6 +121,8 @@ This is not wrong, but it is <span class="inline-grid" style="grid-template-area
 1: The problem is that orchestration semantics are spread across many places.
 2: The solutions have been built many times over, but you end up making custom ones again
 3: Crashes and restarts still lose progress
+
+Comparisons: IaC vs clickops - similar declarative and trackable nature. Java/C memory switch - similar overhead payment for not having to put in the work
 -->
 
 ---
@@ -281,3 +283,4 @@ layout: full
 7.  <a href="https://docs.temporal.io/develop/activity-retry-simulator">Activity Retry Simulator</a>
 8.  <a href="https://docs.temporal.io/develop/worker-performance">Worker Performance</a>
 9.  <a href="https://docs.temporal.io/self-hosted-guide">Self-host to production guide</a>
+10. <a href="https://github.com/temporalio">The repo</a>
