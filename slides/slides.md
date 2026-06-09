@@ -16,10 +16,6 @@ duration: 20min
 
 Durable execution for workflows as code
 
-<div class="mt-10 text-xl opacity-70">
-What breaks when a process outlives one request?
-</div>
-
 <!--
 Frame the talk around engineering pain, not Temporal terminology. The first question should be familiar even to people who have never used a workflow engine.
 -->
@@ -31,19 +27,59 @@ class: text-center
 
 # A Workflow
 
-One process with memory
+One process with state
 
-<div class="mt-10 text-left inline-block text-2xl leading-10">
+<div class="mt-10 inline-grid text-left text-2xl leading-10" style="grid-template-areas: 'stack'">
 
-- starts from an event
+<div v-click.hide="1" style="grid-area: stack">
+
+- starts with an event
 - moves through steps
 - waits for things
 - eventually finishes
 
 </div>
 
+<div v-click="[1, 2]" style="grid-area: stack">
+
+- starts with a customer placing an order
+- moves from payment processing to packing
+- waits for automated payment confirmation and manual shipping confirmation
+- finishes when the package is picked up
+
+</div>
+
+<div v-click="[2, 3]" style="grid-area: stack">
+
+- starts with a release being promoted to staging
+- moves from canary to a phased rollout
+- waits for automated health checks and a manual go/no-go approval
+- finishes when every region is on the new version
+
+</div>
+
+<div v-click="[3, 4]" style="grid-area: stack">
+
+- starts with a user raising a support ticket
+- moves from triage to assignment to resolution
+- waits for an automated diagnostic and a manual engineer sign-off
+- finishes when the ticket is closed and confirmed
+
+</div>
+
+<div v-click="4" style="grid-area: stack">
+
+- starts with an agentic graph runnner
+- moves through agent nodes with tool calls and deterministic decision points
+- waits for model provider API calls and manual human-in-the-loop approvals
+- finishes when the goal is met
+
+</div>
+
+</div>
+
 <!--
-Keep this generic. An order, rollout, onboarding, ticket escalation, long-running agent task, or migration can all be workflows.
+Keep this generic, then make it concrete on the first click. An order, rollout, onboarding, ticket escalation, long-running agent task, or migration can all be workflows.
 -->
 
 ---
@@ -75,8 +111,16 @@ layout: center
 </div>
 </div>
 
+<div v-click="1" class="mt-12 text-2xl opacity-80">
+
+This is not wrong, but it is <span class="inline-grid" style="grid-template-areas: 'stack'"><em v-click.hide="2" style="grid-area: stack">coupled, distributed logic</em><em v-click="[2, 3]" style="grid-area: stack">globally redundant</em><em v-click="3" style="grid-area: stack">fragile</em></span>
+
+</div>
+
 <!--
-This is not wrong architecture. It is often where teams naturally end up. The problem is that orchestration semantics are spread across many places.
+1: The problem is that orchestration semantics are spread across many places.
+2: The solutions have been built many times over, but you end up making custom ones again
+3: Crashes and restarts still lose progress
 -->
 
 ---
@@ -84,49 +128,36 @@ layout: center
 class: text-center
 ---
 
-# Temporal's Bet
+# The Workflow Class
 
-Write the process once.
+<div class="text-2xl leading-10">
 
-Keep its progress durably.
+The process as code
 
-Run side effects safely.
+<div v-click="1" class="mt-6">
 
-<!--
-The core proposition: durable execution, not just another queue. Emphasize that the workflow code describes orchestration, while Temporal records enough history to recover and replay.
--->
-
----
-layout: center
----
-
-# The Split
-
-<div class="grid grid-cols-2 gap-10 mt-8 text-2xl">
-<div>
-
-**Workflow**
-
-- deterministic
-- orchestration
-- decisions
-- waits
+Each step's I/O is recorded, so the code can be **replayed** to rebuild state after any crash.
 
 </div>
-<div>
 
-**Activity**
+<div v-click="2" class="mt-6">
 
-- side effects
-- APIs
-- databases
-- randomness
+Between steps the Workflow can **wait** — seconds or months — with no process held open.
 
 </div>
+
+<div v-click="3" class="mt-8 opacity-90">
+
+For the messy parts — APIs, databases, randomness — it calls an **Activity**.
+
+<div class="opacity-70 text-xl mt-2">Temporal runs those once, records the result, and retries on failure.</div>
+
+</div>
+
 </div>
 
 <!--
-This is the most important implementation concept. Workflows decide what should happen. Activities do things that touch the outside world.
+This is the core mental model in one slide. The workflow is durable code; replay rebuilds it from recorded history; it can wait indefinitely because nothing is held open; and anything non-deterministic or side-effecting is pushed into an activity, which Temporal runs once, records, and retries. Activities are not peers of the workflow — they are the calls it makes out to the world.
 -->
 
 ---
@@ -136,18 +167,26 @@ class: text-center
 
 # What Temporal Records
 
-<div class="mt-10 text-3xl leading-14">
 
-events · timers · signals · retries · results
+Temporal records one thing: a log of events.
+
+<div class="mt-8 text-left inline-block text-2xl leading-12">
+
+- a workflow started — `WorkflowExecutionStarted`
+- a timer fired — `TimerFired`
+- a signal arrived — `WorkflowExecutionSignaled`
+- an activity ran — `ActivityTaskScheduled` → `Completed` / `Failed`
 
 </div>
 
-<div class="mt-10 text-xl opacity-70">
-Replay rebuilds workflow state from history.
+<div v-click="1" class="absolute inset-0 flex items-center justify-center bg-white/95">
+  <img src="/images/temporal-database-img.svg" class="max-h-[80%] max-w-[85%]" />
 </div>
 
 <!--
-This is why worker restart is not fatal. The worker can replay history and continue from the next needed command.
+History is nothing but a stream of events. An activity is work you write; running it appends several events (scheduled, started, completed/failed). Timers, signals, and retries are all just other kinds of events. This is why worker restart is not fatal — the worker replays history and continues from the next needed command.
+
+On click, bring up the persistence layer: that event log is durably stored in Temporal's database (the persistence store, e.g. Cassandra/MySQL/PostgreSQL). The history is the source of truth — workers are stateless and replay from it. This is what makes it survive crashes.
 -->
 
 ---
@@ -170,44 +209,26 @@ layout: center
 Keep terms operational. Avoid deep internals unless asked. These are enough for the demos.
 -->
 
----
-layout: center
-class: text-center
----
-
-# What It Buys You
-
-<div class="mt-10 text-3xl leading-14">
-
-less checkpointing<br>
-visible retries<br>
-long waits without sleeping processes<br>
-crash/restart continuity
-
-</div>
-
-<!--
-Tie back to the demo: order waits for approval, menu waits for publish time, agent waits between tool calls.
--->
 
 ---
 layout: center
 ---
 
-# What It Does Not Remove
+# Still On You
 
-<div class="text-2xl leading-12">
+<div class="mt-6 text-left inline-block text-2xl leading-12">
 
-- idempotency
-- versioning workflow code
-- operational ownership
-- choosing workflow boundaries
-- understanding failure semantics
+- **Idempotency** — activities can run more than once; your side effects must be safe
+- **Workflow versioning** — replay means you can't freely edit in-flight workflow code
 
 </div>
 
 <!--
-Temporal solves orchestration durability. It does not make every side effect safe or every process design obvious.
+Temporal makes orchestration durable, not every side effect safe. Two gotchas survive it, both consequences of how it works:
+
+Idempotency: activities are at-least-once, not exactly-once. A retry, or a completed activity whose result never got recorded, re-runs the code. If it charges a card, you double-charge unless the activity is idempotent. Temporal's internal state is consistent; your real-world effects are your responsibility.
+
+Versioning: because workflows replay from history, changing workflow code can break determinism for running executions. Temporal gives you primitives (patched/GetVersion, worker versioning), but reasoning about in-flight workflows on old code stays yours.
 -->
 
 ---
@@ -215,28 +236,28 @@ layout: center
 class: text-center
 ---
 
-# Three Ways To Continue
+# Three Options
 
 <div class="grid grid-cols-3 gap-6 mt-12 text-xl">
 <div>
 
 **Docs**
 
-mental model
+Build understanding & many examples
 
 </div>
 <div>
 
 **Examples**
 
-run and break it
+Run the code in this repo. Try it, break it, build it out
 
 </div>
 <div>
 
 **BYOC**
 
-map real systems
+Small questionnaire to help map your system in a Temporal axis
 
 </div>
 </div>
@@ -244,3 +265,19 @@ map real systems
 <!--
 This is the handoff into the workshop format: people choose their path. Mention that the examples cover orders, menu rollout, and agentic loops.
 -->
+
+---
+layout: full
+---
+
+# Suggested Docs
+
+1.  <a href="https://docs.temporal.io/temporal-service/temporal-server">Temporal server introduction</a>
+2.  <a href="https://docs.temporal.io/temporal-service/persistence">Persistence Layer</a>
+3.  <a href="https://docs.temporal.io/activities">Activities</a>
+4.  <a href="https://docs.temporal.io/quickstarts">Quickstarts</a>
+5.  <a href="https://learn.temporal.io/examples/">Huge list of example applications and SDK samples for Go, Java, .NET, Python, Ruby, Typescript</a>
+6.  <a href="https://docs.temporal.io/develop/">Top level page for all SDK docs</a>
+7.  <a href="https://docs.temporal.io/develop/activity-retry-simulator">Activity Retry Simulator</a>
+8.  <a href="https://docs.temporal.io/develop/worker-performance">Worker Performance</a>
+9.  <a href="https://docs.temporal.io/self-hosted-guide">Self-host to production guide</a>
